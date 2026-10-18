@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Word 리더">
+  <title>iPad Word Reader Pro</title>
+
+  <!-- DOCX 파싱 라이브러리 (Mammoth.js) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #fcfcfd;
+      --text-color: #1a1a1c;
+      --sub-text: #7c7c82;
+      --toolbar-bg: rgba(255, 255, 255, 0.88);
+      --card-bg: #ffffff;
+      --border-color: #e4e4e9;
+      --accent-color: #007aff;
+      --mark-bg: #ffe066;
+      --mark-active-bg: #ff922b;
+      --font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+      --content-width: 760px;
+      --font-size: 19px;
+      --line-height: 1.85;
+      --header-height: 52px;
+    }
+
+    [data-theme="sepia"] {
+      --bg-color: #f6f0e4;
+      --text-color: #382e24;
+      --sub-text: #877764;
+      --toolbar-bg: rgba(246, 240, 228, 0.92);
+      --card-bg: #ebe2cf;
+      --border-color: #ded1be;
+      --accent-color: #b36b00;
+      --mark-bg: #ffd166;
+      --mark-active-bg: #e76f51;
+    }
+
+    [data-theme="green"] {
+      --bg-color: #edf3ed;
+      --text-color: #1f3020;
+      --sub-text: #607963;
+      --toolbar-bg: rgba(237, 243, 237, 0.92);
+      --card-bg: #dbe7dc;
+      --border-color: #c6d7c7;
+      --accent-color: #2b8a3e;
+      --mark-bg: #ffe066;
+      --mark-active-bg: #e67700;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #18181b;
+      --text-color: #d4d4d8;
+      --sub-text: #919199;
+      --toolbar-bg: rgba(28, 28, 32, 0.92);
+      --card-bg: #27272a;
+      --border-color: #38383e;
+      --accent-color: #3894ff;
+      --mark-bg: #b58900;
+      --mark-active-bg: #f59f00;
+    }
+
+    [data-theme="black"] {
+      --bg-color: #000000;
+      --text-color: #c7c7cc;
+      --sub-text: #707075;
+      --toolbar-bg: rgba(15, 15, 15, 0.94);
+      --card-bg: #181818;
+      --border-color: #282828;
+      --accent-color: #0a84ff;
+      --mark-bg: #856404;
+      --mark-active-bg: #e8590c;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-family);
+      font-size: var(--font-size);
+      line-height: var(--line-height);
+      transition: background-color 0.2s, color 0.2s;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* 상단 프로그레스 게이지 바 */
+    #readingProgress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 0%;
+      height: 3.5px;
+      background-color: var(--accent-color);
+      z-index: 1000;
+      transition: width 0.1s ease-out;
+    }
+
+    /* 상단 툴바 */
+    header {
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      background-color: var(--toolbar-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: env(safe-area-inset-top, 10px) 16px 10px 16px;
+      z-index: 200;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    header.zen-hidden {
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button, label.btn {
+      appearance: none;
+      background: none;
+      border: 1px solid var(--border-color);
+      border-radius: 9px;
+      color: var(--text-color);
+      padding: 6px 11px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    button:active, label.btn:active {
+      transform: scale(0.96);
+      opacity: 0.7;
+    }
+
+    .accent-btn {
+      background-color: var(--accent-color);
+      color: #fff !important;
+      border-color: var(--accent-color);
+    }
+
+    /* 플로팅 검색 바 */
+    #searchBar {
+      position: sticky;
+      top: 52px;
+      background: var(--toolbar-bg);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      z-index: 190;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    #searchBar.active {
+      display: flex;
+    }
+
+    #searchInput {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 7px 12px;
+      color: var(--text-color);
+      font-size: 15px;
+      width: 260px;
+      outline: none;
+    }
+
+    /* 본문 영역 */
+    main {
+      max-width: var(--content-width);
+      margin: 0 auto;
+      padding: 30px 24px calc(env(safe-area-inset-bottom, 24px) + 90px) 24px;
+      min-height: 85vh;
+      word-break: break-word;
+      transition: max-width 0.25s ease;
+    }
+
+    #content p {
+      margin: 1.4em 0;
+      text-align: justify;
+    }
+
+    #content h1, #content h2, #content h3 {
+      font-weight: 700;
+      margin-top: 1.8em;
+      margin-bottom: 0.6em;
+      line-height: 1.35;
+      color: var(--text-color);
+      scroll-margin-top: 70px;
+    }
+
+    #content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 20px 0;
+      display: block;
+    }
+
+    #content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    #content th, #content td {
+      border: 1px solid var(--border-color);
+      padding: 10px 12px;
+      font-size: 0.95em;
+    }
+
+    /* 가로 모드 2단 분할 레이아웃 */
+    .two-column-layout {
+      column-count: 2;
+      column-gap: 50px;
+      column-rule: 1px solid var(--border-color);
+      max-width: 1160px !important;
+    }
+
+    .search-match {
+      background-color: var(--mark-bg);
+      color: inherit;
+      border-radius: 3px;
+      padding: 1px 2px;
+    }
+
+    .search-match.current-match {
+      background-color: var(--mark-active-bg);
+      color: #fff;
+      font-weight: bold;
+    }
+
+    /* 하단 통계 및 인디케이터 바 */
+    #bottomStatusBar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--toolbar-bg);
+      border-top: 1px solid var(--border-color);
+      padding: 6px 18px calc(env(safe-area-inset-bottom, 6px) + 2px) 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12.5px;
+      color: var(--sub-text);
+      z-index: 100;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      transition: transform 0.3s ease;
+    }
+
+    #bottomStatusBar.zen-hidden {
+      transform: translateY(100%);
+    }
+
+    /* 모달 및 슬라이드 드로어 */
+    .drawer-overlay, .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: none;
+      z-index: 300;
+    }
+
+    .drawer-overlay.active, .modal-overlay.active {
+      display: flex;
+    }
+
+    /* 목차 좌측 드로어 */
+    .toc-drawer {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 320px;
+      background: var(--toolbar-bg);
+      border-right: 1px solid var(--border-color);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 310;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.15);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+    }
+
+    .toc-drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toc-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .toc-item {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14.5px;
+      cursor: pointer;
+      color: var(--text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toc-item:active {
+      background: var(--card-bg);
+    }
+
+    .toc-item.h2 { padding-left: 24px; font-size: 13.5px; opacity: 0.9; }
+    .toc-item.h3 { padding-left: 36px; font-size: 13px; opacity: 0.8; }
+
+    /* 설정 팝업 시트 */
+    .modal-box {
+      width: 100%;
+      max-width: 480px;
+      background: var(--toolbar-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      overflow: hidden;
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .setting-label {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    .theme-chip {
+      height: 36px;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .theme-chip.selected {
+      border-color: var(--accent-color);
+    }
+
+    /* 플로팅 토스트 */
+    #toast {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 20px) + 40px);
+      left: 50%;
+      transform: translateX(-50%) translateY(30px);
+      background-color: rgba(20, 20, 20, 0.88);
+      color: #fff;
+      padding: 9px 20px;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 500;
+      pointer-events: none;
+    }
+
+    #toast.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* 빈 화면 상태 */
+    .empty-state {
+      text-align: center;
+      padding: 130px 20px;
+      color: var(--sub-text);
+    }
+
+    .empty-state h2 {
+      font-size: 25px;
+      margin-bottom: 8px;
+      color: var(--text-color);
+    }
+
+    input[type="file"] { display: none; }
+  </style>
+</head>
+<body data-theme="light">
+
+  <div id="readingProgress"></div>
+
+  <!-- 상단 네비게이션 헤더 -->
+  <header id="header">
+    <div class="toolbar-group">
+      <label for="fileInput" class="btn accent-btn">📂 열기</label>
+      <input type="file" id="fileInput" accept=".docx" />
+      <button id="tocToggleBtn">📑 목차</button>
+      <button id="searchToggleBtn">🔍 검색</button>
+      <button id="bookmarkModalBtn">🔖 책갈피</button>
+    </div>
+
+    <div class="toolbar-group">
+      <button id="ttsPlayBtn">🔊 듣기</button>
+      <button id="autoScrollBtn">⬇️ 자동스크롤</button>
+      <button id="settingsBtn">⚙️ 설정</button>
+      <button id="zenBtn" title="몰입 모드">전체화면</button>
+    </div>
+  </header>
+
+  <!-- 검색 패널 -->
+  <div id="searchBar">
+    <input type="text" id="searchInput" placeholder="문서 내 검색어 입력..." />
+    <span id="searchCount" style="font-size: 13.5px; color: var(--sub-text);">0 / 0</span>
+    <button id="prevMatchBtn">▲ 이전</button>
+    <button id="nextMatchBtn">▼ 다음</button>
+    <button id="closeSearchBtn" style="border:none;">✕</button>
+  </div>
+
+  <!-- 좌측 목차 드로어 -->
+  <div id="tocOverlay" class="drawer-overlay"></div>
+  <aside id="tocDrawer" class="toc-drawer">
+    <div class="drawer-header">
+      <strong style="font-size: 16px;">문서 목차</strong>
+      <button id="closeTocBtn" style="border:none; font-size:18px;">✕</button>
+    </div>
+    <div id="tocList" class="toc-list">
+      <!-- 동적 생성되는 제목 목록 -->
+    </div>
+  </aside>
+
+  <!-- 본문 영역 -->
+  <main id="mainContainer">
+    <div id="content">
+      <div class="empty-state">
+        <h2>읽을 문서를 선택하세요</h2>
+        <p>상단의 <strong>'📂 열기'</strong> 버튼으로 Word(.docx) 파일을 선택하세요.<br>한 번 열어둔 문서는 앱을 다시 열어도 그 자리 그대로 바로 복원됩니다.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- 하단 상태 및 통계 바 -->
+  <footer id="bottomStatusBar">
+    <span id="readingStats">단어 0개 · 예상 완독 0분</span>
+    <span id="readingPercent">0% 독서 완료</span>
+  </footer>
+
+  <!-- 설정 모달 -->
+  <div id="settingsModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <strong style="font-size: 16px;">독서 환경 설정</strong>
+        <button id="closeSettingsBtn" style="border:none; font-size: 18px;">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- 테마 선택 -->
+        <div>
+          <div class="setting-label" style="margin-bottom: 8px;">테마</div>
+          <div class="theme-grid">
+            <div class="theme-chip selected" style="background:#fff; color:#000; border:1px solid #ddd;" data-theme="light">라이트</div>
+            <div class="theme-chip" style="background:#f6f0e4; color:#382e24;" data-theme="sepia">세피아</div>
+            <div class="theme-chip" style="background:#edf3ed; color:#1f3020;" data-theme="green">그린</div>
+            <div class="theme-chip" style="background:#18181b; color:#d4d4d8;" data-theme="dark">다크</div>
+            <div class="theme-chip" style="background:#000; color:#fff;" data-theme="black">블랙</div>
+          </div>
+        </div>
+
+        <!-- 2단 보기 토글 -->
+        <div class="setting-row">
+          <span class="setting-label">가로 2단 책 펼침 보기</span>
+          <button id="twoColumnToggleBtn">1단 보기</button>
+        </div>
+
+        <!-- 글자 크기 -->
+        <div class="setting-row">
+          <span class="setting-label">글자 크기</span>
+          <div style="display:flex; gap:6px;">
+            <button id="fontDecBtn">A-</button>
+            <button id="fontIncBtn">A+</button>
+          </div>
+        </div>
+
+        <!-- 서체 선택 -->
+        <div class="setting-row">
+          <span class="setting-label">글꼴</span>
+          <div style="display:flex; gap:6px;">
+            <button class="font-fam-btn" data-font="sans">고딕</button>
+            <button class="font-fam-btn" data-font="serif">명조</button>
+            <button class="font-fam-btn" data-font="mono">고정폭</button>
+          </div>
+        </div>
+
+        <!-- 줄 간격 -->
+        <div class="setting-row">
+          <span class="setting-label">줄 간격</span>
+          <div style="display:flex; gap:6px;">
+            <button class="line-height-btn" data-lh="1.5">1.5x</button>
+            <button class="line-height-btn" data-lh="1.85">1.85x</button>
+            <button class="line-height-btn" data-lh="2.2">2.2x</button>
+          </div>
+        </div>
+
+        <!-- 본문 너비 -->
+        <div class="setting-row">
+          <span class="setting-label">본문 너비</span>
+          <div style="display:flex; gap:6px;">
+            <button class="width-btn" data-w="640px">좁게</button>
+            <button class="width-btn" data-w="760px">보통</button>
+            <button class="width-btn" data-w="980px">넓게</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 책갈피 관리 모달 -->
+  <div id="bookmarkModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <strong style="font-size: 16px;">책갈피</strong>
+        <div style="display:flex; gap:6px;">
+          <button id="addNewBookmarkBtn" class="accent-btn" style="padding: 4px 10px; font-size:13px;">+ 현재 위치 추가</button>
+          <button id="closeBookmarkBtn" style="border:none; font-size: 18px;">✕</button>
+        </div>
+      </div>
+      <div id="bookmarkList" class="modal-body" style="padding: 14px;">
+        <!-- 북마크 아이템 리스트 -->
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    // --- IndexedDB 설정 (문서 영구 캐싱) ---
+    const DB_NAME = 'iPadWordReaderDB';
+    const DB_VERSION = 1;
+    let db = null;
+
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const dbInstance = e.target.result;
+          if (!dbInstance.objectStoreNames.contains('documents')) {
+            dbInstance.createObjectStore('documents', { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = (e) => {
+          db = e.target.result;
+          resolve(db);
+        };
+        req.onerror = (e) => reject(e);
+      });
+    }
+
+    function saveDocToDB(id, name, htmlContent, stats) {
+      if (!db) return;
+      const tx = db.transaction('documents', 'readwrite');
+      tx.objectStore('documents').put({
+        id: id,
+        name: name,
+        html: htmlContent,
+        stats: stats,
+        timestamp: Date.now()
+      });
+    }
+
+    function getDocFromDB(id) {
+      return new Promise((resolve) => {
+        if (!db) return resolve(null);
+        const tx = db.transaction('documents', 'readonly');
+        const req = tx.objectStore('documents').get(id);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    // --- 변수 및 엘리먼트 참조 ---
+    const content = document.getElementById('content');
+    const fileInput = document.getElementById('fileInput');
+    const header = document.getElementById('header');
+    const bottomBar = document.getElementById('bottomStatusBar');
+    const readingProgress = document.getElementById('readingProgress');
+    const toast = document.getElementById('toast');
+    const readingStats = document.getElementById('readingStats');
+    const readingPercent = document.getElementById('readingPercent');
+
+    // 모달 / 드로어
+    const tocToggleBtn = document.getElementById('tocToggleBtn');
+    const tocDrawer = document.getElementById('tocDrawer');
+    const tocOverlay = document.getElementById('tocOverlay');
+    const closeTocBtn = document.getElementById('closeTocBtn');
+    const tocList = document.getElementById('tocList');
+
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsModal = document.getElementById('settingsModal');
+    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+
+    const bookmarkModalBtn = document.getElementById('bookmarkModalBtn');
+    const bookmarkModal = document.getElementById('bookmarkModal');
+    const closeBookmarkBtn = document.getElementById('closeBookmarkBtn');
+    const addNewBookmarkBtn = document.getElementById('addNewBookmarkBtn');
+    const bookmarkList = document.getElementById('bookmarkList');
+
+    // 검색
+    const searchToggleBtn = document.getElementById('searchToggleBtn');
+    const searchBar = document.getElementById('searchBar');
+    const searchInput = document.getElementById('searchInput');
+    const searchCount = document.getElementById('searchCount');
+    const prevMatchBtn = document.getElementById('prevMatchBtn');
+    const nextMatchBtn = document.getElementById('nextMatchBtn');
+    const closeSearchBtn = document.getElementById('closeSearchBtn');
+
+    // TTS 및 자동 스크롤
+    const ttsPlayBtn = document.getElementById('ttsPlayBtn');
+    const autoScrollBtn = document.getElementById('autoScrollBtn');
+    const zenBtn = document.getElementById('zenBtn');
+
+    let currentFileKey = localStorage.getItem('last_active_doc_key') || null;
+    let currentFontSize = 19;
+    let isTwoColumn = false;
+    let isAutoScrolling = false;
+    let autoScrollInterval = null;
+    let autoScrollSpeed = 1.2;
+    let searchMatches = [];
+    let currentMatchIndex = -1;
+    let isSpeaking = false;
+    let speechUtterance = null;
+    let isZenMode = false;
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    // --- 파일 로드 & 파싱 ---
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const docKey = `doc_${encodeURIComponent(file.name)}_${file.size}`;
+      currentFileKey = docKey;
+      localStorage.setItem('last_active_doc_key', docKey);
+
+      const reader = new FileReader();
+      reader.onload = function(loadEvent) {
+        const arrayBuffer = loadEvent.target.result;
+        mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
+          .then(function(result) {
+            processAndRenderDoc(file.name, result.value, true);
+          })
+          .catch(function(err) {
+            alert('파일 변환 오류: ' + err.message);
+          });
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    function processAndRenderDoc(fileName, html, isNew = false) {
+      content.innerHTML = html;
+
+      // H1, H2, H3 태그에 ID 부여 (목차용)
+      const headings = content.querySelectorAll('h1, h2, h3');
+      headings.forEach((h, idx) => {
+        if (!h.id) h.id = `heading-section-${idx}`;
+      });
+
+      // 단어 수 및 완독 시간 계산
+      const fullText = content.innerText;
+      const wordCount = (fullText.match(/\S+/g) || []).length;
+      const charCount = fullText.length;
+      const readMinutes = Math.max(1, Math.round(wordCount / 220));
+      const statsObj = { wordCount, charCount, readMinutes };
+
+      readingStats.textContent = `단어 ${wordCount.toLocaleString()}개 (${charCount.toLocaleString()}자) · 완독 약 ${readMinutes}분`;
+
+      // DB 저장
+      saveDocToDB(currentFileKey, fileName, content.innerHTML, statsObj);
+
+      // 목차 생성
+      buildTableOfContents(headings);
+
+      // 이전 위치 복원
+      if (isNew) {
+        restorePosition();
+      }
+      updateScrollProgress();
+    }
+
+    // --- 목차 빌더 ---
+    function buildTableOfContents(headings) {
+      tocList.innerHTML = '';
+      if (!headings || headings.length === 0) {
+        tocList.innerHTML = '<div style="text-align:center; padding:30px; color:var(--sub-text);">인식된 장/절 제목이 없습니다.</div>';
+        return;
+      }
+
+      headings.forEach(h => {
+        const item = document.createElement('div');
+        const tag = h.tagName.toLowerCase();
+        item.className = `toc-item ${tag}`;
+        item.textContent = h.textContent.trim() || '제목 없는 섹션';
+        item.addEventListener('click', () => {
+          h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          closeDrawer();
+        });
+        tocList.appendChild(item);
+      });
+    }
+
+    // --- 스크롤 진행률 & 자동 위치 저장 ---
+    let scrollTimer = null;
+    window.addEventListener('scroll', () => {
+      updateScrollProgress();
+
+      if (!currentFileKey) return;
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        const docData = JSON.parse(localStorage.getItem(currentFileKey) || '{}');
+        docData.lastScrollY = window.scrollY;
+        localStorage.setItem(currentFileKey, JSON.stringify(docData));
+      }, 250);
+    });
+
+    function updateScrollProgress() {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      if (max <= 0) {
+        readingProgress.style.width = '0%';
+        readingPercent.textContent = '0% 완료';
+        return;
+      }
+      const percent = Math.min(100, Math.max(0, Math.round((window.scrollY / max) * 100)));
+      readingProgress.style.width = `${percent}%`;
+      readingPercent.textContent = `${percent}% 독서 완료`;
+    }
+
+    function restorePosition() {
+      if (!currentFileKey) return;
+      const docData = JSON.parse(localStorage.getItem(currentFileKey) || '{}');
+      if (docData.lastScrollY && docData.lastScrollY > 80) {
+        setTimeout(() => {
+          window.scrollTo({ top: docData.lastScrollY, behavior: 'smooth' });
+          showToast('마지막으로 읽던 위치를 불러왔어요 📖');
+        }, 150);
+      }
+    }
+
+    // --- 목차 드로어 열기/닫기 ---
+    tocToggleBtn.addEventListener('click', () => {
+      tocOverlay.classList.add('active');
+      tocDrawer.classList.add('open');
+    });
+
+    function closeDrawer() {
+      tocOverlay.classList.remove('active');
+      tocDrawer.classList.remove('open');
+    }
+    tocOverlay.addEventListener('click', closeDrawer);
+    closeTocBtn.addEventListener('click', closeDrawer);
+
+    // --- 환경 설정 (테마, 글꼴, 2단 보기) ---
+    settingsBtn.addEventListener('click', () => settingsModal.classList.add('active'));
+    closeSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('active'));
+    settingsModal.addEventListener('click', (e) => {
+      if (e.target === settingsModal) settingsModal.classList.remove('active');
+    });
+
+    // 테마 변경
+    document.querySelectorAll('.theme-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+        document.body.setAttribute('data-theme', chip.dataset.theme);
+      });
+    });
+
+    // 2단 분할 보기 토글
+    const twoColumnToggleBtn = document.getElementById('twoColumnToggleBtn');
+    twoColumnToggleBtn.addEventListener('click', () => {
+      isTwoColumn = !isTwoColumn;
+      if (isTwoColumn) {
+        content.classList.add('two-column-layout');
+        twoColumnToggleBtn.textContent = '2단 해제';
+        showToast('가로 2단 책 펼침 모드로 전환했어요');
+      } else {
+        content.classList.remove('two-column-layout');
+        twoColumnToggleBtn.textContent = '1단 보기';
+        showToast('일반 1단 모드로 전환했어요');
+      }
+    });
+
+    // 글자 크기
+    document.getElementById('fontIncBtn').addEventListener('click', () => {
+      if (currentFontSize < 34) {
+        currentFontSize += 1.5;
+        document.documentElement.style.setProperty('--font-size', currentFontSize + 'px');
+      }
+    });
+    document.getElementById('fontDecBtn').addEventListener('click', () => {
+      if (currentFontSize > 13) {
+        currentFontSize -= 1.5;
+        document.documentElement.style.setProperty('--font-size', currentFontSize + 'px');
+      }
+    });
+
+    // 서체
+    document.querySelectorAll('.font-fam-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const f = btn.dataset.font;
+        if (f === 'serif') {
+          document.documentElement.style.setProperty('--font-family', '"Apple Myungjo", "Batang", serif');
+        } else if (f === 'mono') {
+          document.documentElement.style.setProperty('--font-family', 'ui-monospace, "Courier New", monospace');
+        } else {
+          document.documentElement.style.setProperty('--font-family', '-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif');
+        }
+      });
+    });
+
+    // 줄간격
+    document.querySelectorAll('.line-height-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.documentElement.style.setProperty('--line-height', btn.dataset.lh);
+      });
+    });
+
+    // 본문 폭
+    document.querySelectorAll('.width-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.documentElement.style.setProperty('--content-width', btn.dataset.w);
+      });
+    });
+
+    // --- 책갈피 기능 ---
+    bookmarkModalBtn.addEventListener('click', () => {
+      renderBookmarkList();
+      bookmarkModal.classList.add('active');
+    });
+    closeBookmarkBtn.addEventListener('click', () => bookmarkModal.classList.remove('active'));
+    bookmarkModal.addEventListener('click', (e) => {
+      if (e.target === bookmarkModal) bookmarkModal.classList.remove('active');
+    });
+
+    addNewBookmarkBtn.addEventListener('click', () => {
+      if (!currentFileKey) {
+        alert('먼저 문서를 열어주세요.');
+        return;
+      }
+      const scrollY = window.scrollY;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = max > 0 ? Math.round((scrollY / max) * 100) : 0;
+
+      let preview = '';
+      const nodes = content.querySelectorAll('p, h1, h2, h3');
+      for (let n of nodes) {
+        const r = n.getBoundingClientRect();
+        if (r.top >= 50 && r.top <= window.innerHeight * 0.4) {
+          preview = n.innerText.slice(0, 22).trim();
+          break;
+        }
+      }
+
+      const defaultTitle = preview ? `${preview}...` : `${pct}% 지점`;
+      const title = prompt('책갈피 이름을 입력하세요:', defaultTitle);
+      if (title === null) return;
+
+      const docData = JSON.parse(localStorage.getItem(currentFileKey) || '{}');
+      if (!docData.bookmarks) docData.bookmarks = [];
+
+      docData.bookmarks.push({
+        id: Date.now(),
+        title: title.trim() || defaultTitle,
+        scrollY: scrollY,
+        percent: pct,
+        date: new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      });
+
+      localStorage.setItem(currentFileKey, JSON.stringify(docData));
+      renderBookmarkList();
+      showToast('책갈피가 등록되었어요 🔖');
+    });
+
+    function renderBookmarkList() {
+      const docData = JSON.parse(localStorage.getItem(currentFileKey) || '{}');
+      const bms = docData.bookmarks || [];
+      bookmarkList.innerHTML = '';
+
+      if (bms.length === 0) {
+        bookmarkList.innerHTML = '<div style="text-align:center; padding:30px; color:var(--sub-text);">등록된 책갈피가 없습니다.</div>';
+        return;
+      }
+
+      bms.forEach(b => {
+        const row = document.createElement('div');
+        row.style.cssText = 'background:var(--card-bg); border:1px solid var(--border-color); border-radius:10px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; cursor:pointer;';
+        row.innerHTML = `
+          <div style="flex:1; overflow:hidden;">
+            <div style="font-weight:600; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${b.title}</div>
+            <div style="font-size:12px; color:var(--sub-text); margin-top:2px;">진행도 ${b.percent}% · ${b.date}</div>
+          </div>
+          <button style="color:#ff3b30; border:none; padding:4px 8px; font-size:12.5px;">삭제</button>
+        `;
+        row.querySelector('div').addEventListener('click', () => {
+          window.scrollTo({ top: b.scrollY, behavior: 'smooth' });
+          bookmarkModal.classList.remove('active');
+        });
+        row.querySelector('button').addEventListener('click', (e) => {
+          e.stopPropagation();
+          docData.bookmarks = docData.bookmarks.filter(x => x.id !== b.id);
+          localStorage.setItem(currentFileKey, JSON.stringify(docData));
+          renderBookmarkList();
+        });
+        bookmarkList.appendChild(row);
+      });
+    }
+
+    // --- 본문 키워드 검색 (Ctrl+F) ---
+    searchToggleBtn.addEventListener('click', () => {
+      searchBar.classList.toggle('active');
+      if (searchBar.classList.contains('active')) {
+        searchInput.focus();
+      } else {
+        clearHighlights();
+      }
+    });
+
+    closeSearchBtn.addEventListener('click', () => {
+      searchBar.classList.remove('active');
+      clearHighlights();
+    });
+
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim();
+      executeSearch(q);
+    });
+
+    function clearHighlights() {
+      const marks = content.querySelectorAll('mark.search-match');
+      marks.forEach(m => {
+        const parent = m.parentNode;
+        parent.replaceChild(document.createTextNode(m.textContent), m);
+        parent.normalize();
+      });
+      searchMatches = [];
+      currentMatchIndex = -1;
+      searchCount.textContent = '0 / 0';
+    }
+
+    function executeSearch(query) {
+      clearHighlights();
+      if (!query || query.length < 2) return;
+
+      const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, null, false);
+      const textNodes = [];
+      let n;
+      while ((n = walker.nextNode())) {
+        if (n.nodeValue.trim().length > 0) textNodes.push(n);
+      }
+
+      textNodes.forEach(node => {
+        const text = node.nodeValue;
+        const lower = text.toLowerCase();
+        const qLower = query.toLowerCase();
+        let idx = lower.indexOf(qLower);
+
+        if (idx !== -1) {
+          const frag = document.createDocumentFragment();
+          let lastIdx = 0;
+          while (idx !== -1) {
+            frag.appendChild(document.createTextNode(text.substring(lastIdx, idx)));
+            const mark = document.createElement('mark');
+            mark.className = 'search-match';
+            mark.textContent = text.substring(idx, idx + query.length);
+            frag.appendChild(mark);
+            lastIdx = idx + query.length;
+            idx = lower.indexOf(qLower, lastIdx);
+          }
+          frag.appendChild(document.createTextNode(text.substring(lastIdx)));
+          node.parentNode.replaceChild(frag, node);
+        }
+      });
+
+      searchMatches = Array.from(content.querySelectorAll('mark.search-match'));
+      if (searchMatches.length > 0) {
+        currentMatchIndex = 0;
+        highlightCurrentMatch();
+      } else {
+        searchCount.textContent = '0 / 0';
+      }
+    }
+
+    function highlightCurrentMatch() {
+      searchMatches.forEach(m => m.classList.remove('current-match'));
+      if (currentMatchIndex >= 0 && currentMatchIndex < searchMatches.length) {
+        const current = searchMatches[currentMatchIndex];
+        current.classList.add('current-match');
+        current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        searchCount.textContent = `${currentMatchIndex + 1} / ${searchMatches.length}`;
+      }
+    }
+
+    nextMatchBtn.addEventListener('click', () => {
+      if (searchMatches.length === 0) return;
+      currentMatchIndex = (currentMatchIndex + 1) % searchMatches.length;
+      highlightCurrentMatch();
+    });
+
+    prevMatchBtn.addEventListener('click', () => {
+      if (searchMatches.length === 0) return;
+      currentMatchIndex = (currentMatchIndex - 1 + searchMatches.length) % searchMatches.length;
+      highlightCurrentMatch();
+    });
+
+    // --- TTS (오디오북 읽어주기) ---
+    ttsPlayBtn.addEventListener('click', () => {
+      if (!('speechSynthesis' in window)) {
+        alert('이 기기는 음성 합성을 지원하지 않습니다.');
+        return;
+      }
+
+      if (isSpeaking) {
+        window.speechSynthesis.cancel();
+        isSpeaking = false;
+        ttsPlayBtn.textContent = '🔊 듣기';
+        showToast('음성 낭독을 정지했어요');
+        return;
+      }
+
+      const text = content.innerText.trim();
+      if (!text) {
+        alert('낭독할 내용이 없습니다.');
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      // 가독성을 위해 현재 위치 기준으로 발췌해 낭독
+      speechUtterance = new SpeechSynthesisUtterance(text.slice(0, 10000));
+      speechUtterance.lang = 'ko-KR';
+      speechUtterance.rate = 1.0;
+
+      speechUtterance.onend = () => {
+        isSpeaking = false;
+        ttsPlayBtn.textContent = '🔊 듣기';
+      };
+
+      window.speechSynthesis.speak(speechUtterance);
+      isSpeaking = true;
+      ttsPlayBtn.textContent = '⏹ 정지';
+      showToast('본문 낭독을 시작합니다 🎧');
+    });
+
+    // --- 자동 스크롤 (핸즈프리) ---
+    autoScrollBtn.addEventListener('click', () => {
+      if (isAutoScrolling) {
+        clearInterval(autoScrollInterval);
+        isAutoScrolling = false;
+        autoScrollBtn.textContent = '⬇️ 자동스크롤';
+        showToast('자동 스크롤이 중지되었습니다');
+      } else {
+        isAutoScrolling = true;
+        autoScrollBtn.textContent = '⏸ 일시정지';
+        autoScrollInterval = setInterval(() => {
+          window.scrollBy(0, autoScrollSpeed);
+        }, 20);
+        showToast('자동 스크롤을 시작합니다');
+      }
+    });
+
+    // --- 몰입(Zen) 모드 ---
+    zenBtn.addEventListener('click', toggleZenMode);
+    content.addEventListener('click', (e) => {
+      // 텍스트 드래그가 아닐 때 가볍게 탭하면 툴바 숨김/보임 토글
+      if (window.getSelection().toString().length === 0 && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
+        toggleZenMode();
+      }
+    });
+
+    function toggleZenMode() {
+      isZenMode = !isZenMode;
+      header.classList.toggle('zen-hidden', isZenMode);
+      bottomBar.classList.toggle('zen-hidden', isZenMode);
+      if (isZenMode) {
+        searchBar.classList.remove('active');
+        clearHighlights();
+      }
+    }
+
+    // --- 초기화: 앱 실행 시 마지막 문서 자동 로드 ---
+    window.addEventListener('DOMContentLoaded', async () => {
+      await initDB();
+      if (currentFileKey) {
+        const cachedDoc = await getDocFromDB(currentFileKey);
+        if (cachedDoc) {
+          processAndRenderDoc(cachedDoc.name, cachedDoc.html, true);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
