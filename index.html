@@ -26,7 +26,6 @@
       --content-width: 760px;
       --font-size: 19px;
       --line-height: 1.85;
-      --header-height: 52px;
     }
 
     [data-theme="sepia"] {
@@ -95,7 +94,6 @@
       overflow-x: hidden;
     }
 
-    /* 상단 프로그레스 게이지 바 */
     #readingProgress {
       position: fixed;
       top: 0;
@@ -107,7 +105,6 @@
       transition: width 0.1s ease-out;
     }
 
-    /* 상단 툴바 */
     header {
       position: sticky;
       top: 0;
@@ -166,7 +163,6 @@
       border-color: var(--accent-color);
     }
 
-    /* 플로팅 검색 바 */
     #searchBar {
       position: sticky;
       top: 52px;
@@ -197,7 +193,6 @@
       outline: none;
     }
 
-    /* 본문 영역 */
     main {
       max-width: var(--content-width);
       margin: 0 auto;
@@ -241,7 +236,6 @@
       font-size: 0.95em;
     }
 
-    /* 가로 모드 2단 분할 레이아웃 */
     .two-column-layout {
       column-count: 2;
       column-gap: 50px;
@@ -262,7 +256,6 @@
       font-weight: bold;
     }
 
-    /* 하단 통계 및 인디케이터 바 */
     #bottomStatusBar {
       position: fixed;
       bottom: 0;
@@ -286,7 +279,6 @@
       transform: translateY(100%);
     }
 
-    /* 모달 및 슬라이드 드로어 */
     .drawer-overlay, .modal-overlay {
       position: fixed;
       inset: 0;
@@ -301,7 +293,6 @@
       display: flex;
     }
 
-    /* 목차 좌측 드로어 */
     .toc-drawer {
       position: fixed;
       top: 0;
@@ -352,17 +343,13 @@
       text-overflow: ellipsis;
     }
 
-    .toc-item:active {
-      background: var(--card-bg);
-    }
-
+    .toc-item:active { background: var(--card-bg); }
     .toc-item.h2 { padding-left: 24px; font-size: 13.5px; opacity: 0.9; }
     .toc-item.h3 { padding-left: 36px; font-size: 13px; opacity: 0.8; }
 
-    /* 설정 팝업 시트 */
     .modal-box {
       width: 100%;
-      max-width: 480px;
+      max-width: 500px;
       background: var(--toolbar-bg);
       border: 1px solid var(--border-color);
       border-radius: 18px;
@@ -421,11 +408,8 @@
       font-weight: bold;
     }
 
-    .theme-chip.selected {
-      border-color: var(--accent-color);
-    }
+    .theme-chip.selected { border-color: var(--accent-color); }
 
-    /* 플로팅 토스트 */
     #toast {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 20px) + 40px);
@@ -450,7 +434,6 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    /* 빈 화면 상태 */
     .empty-state {
       text-align: center;
       padding: 130px 20px;
@@ -470,25 +453,23 @@
 
   <div id="readingProgress"></div>
 
-  <!-- 상단 네비게이션 헤더 -->
   <header id="header">
     <div class="toolbar-group">
-      <label for="fileInput" class="btn accent-btn">📂 열기</label>
+      <label for="fileInput" class="btn accent-btn">📂 새 파일 열기</label>
       <input type="file" id="fileInput" accept=".docx" />
+      <button id="libraryBtn">📚 내 보관함</button>
       <button id="tocToggleBtn">📑 목차</button>
       <button id="searchToggleBtn">🔍 검색</button>
-      <button id="bookmarkModalBtn">🔖 책갈피</button>
     </div>
 
     <div class="toolbar-group">
+      <button id="bookmarkModalBtn">🔖 책갈피</button>
       <button id="ttsPlayBtn">🔊 듣기</button>
-      <button id="autoScrollBtn">⬇️ 자동스크롤</button>
       <button id="settingsBtn">⚙️ 설정</button>
-      <button id="zenBtn" title="몰입 모드">전체화면</button>
+      <button id="zenBtn">전체화면</button>
     </div>
   </header>
 
-  <!-- 검색 패널 -->
   <div id="searchBar">
     <input type="text" id="searchInput" placeholder="문서 내 검색어 입력..." />
     <span id="searchCount" style="font-size: 13.5px; color: var(--sub-text);">0 / 0</span>
@@ -497,33 +478,39 @@
     <button id="closeSearchBtn" style="border:none;">✕</button>
   </div>
 
-  <!-- 좌측 목차 드로어 -->
   <div id="tocOverlay" class="drawer-overlay"></div>
   <aside id="tocDrawer" class="toc-drawer">
     <div class="drawer-header">
       <strong style="font-size: 16px;">문서 목차</strong>
       <button id="closeTocBtn" style="border:none; font-size:18px;">✕</button>
     </div>
-    <div id="tocList" class="toc-list">
-      <!-- 동적 생성되는 제목 목록 -->
-    </div>
+    <div id="tocList" class="toc-list"></div>
   </aside>
 
-  <!-- 본문 영역 -->
   <main id="mainContainer">
     <div id="content">
       <div class="empty-state">
         <h2>읽을 문서를 선택하세요</h2>
-        <p>상단의 <strong>'📂 열기'</strong> 버튼으로 Word(.docx) 파일을 선택하세요.<br>한 번 열어둔 문서는 앱을 다시 열어도 그 자리 그대로 바로 복원됩니다.</p>
+        <p>상단의 <strong>'📂 새 파일 열기'</strong> 버튼으로 Word 파일을 선택하거나,<br><strong>'📚 내 보관함'</strong>에서 예전에 읽던 문서를 골라보세요.</p>
       </div>
     </div>
   </main>
 
-  <!-- 하단 상태 및 통계 바 -->
   <footer id="bottomStatusBar">
     <span id="readingStats">단어 0개 · 예상 완독 0분</span>
     <span id="readingPercent">0% 독서 완료</span>
   </footer>
+
+  <!-- 내 보관함 (히스토리) 모달 -->
+  <div id="libraryModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <strong style="font-size: 16px;">📚 내 문서 보관함</strong>
+        <button id="closeLibraryBtn" style="border:none; font-size: 18px;">✕</button>
+      </div>
+      <div id="libraryList" class="modal-body" style="padding: 14px;"></div>
+    </div>
+  </div>
 
   <!-- 설정 모달 -->
   <div id="settingsModal" class="modal-overlay">
@@ -533,7 +520,6 @@
         <button id="closeSettingsBtn" style="border:none; font-size: 18px;">✕</button>
       </div>
       <div class="modal-body">
-        <!-- 테마 선택 -->
         <div>
           <div class="setting-label" style="margin-bottom: 8px;">테마</div>
           <div class="theme-grid">
@@ -544,14 +530,10 @@
             <div class="theme-chip" style="background:#000; color:#fff;" data-theme="black">블랙</div>
           </div>
         </div>
-
-        <!-- 2단 보기 토글 -->
         <div class="setting-row">
           <span class="setting-label">가로 2단 책 펼침 보기</span>
           <button id="twoColumnToggleBtn">1단 보기</button>
         </div>
-
-        <!-- 글자 크기 -->
         <div class="setting-row">
           <span class="setting-label">글자 크기</span>
           <div style="display:flex; gap:6px;">
@@ -559,8 +541,6 @@
             <button id="fontIncBtn">A+</button>
           </div>
         </div>
-
-        <!-- 서체 선택 -->
         <div class="setting-row">
           <span class="setting-label">글꼴</span>
           <div style="display:flex; gap:6px;">
@@ -569,8 +549,6 @@
             <button class="font-fam-btn" data-font="mono">고정폭</button>
           </div>
         </div>
-
-        <!-- 줄 간격 -->
         <div class="setting-row">
           <span class="setting-label">줄 간격</span>
           <div style="display:flex; gap:6px;">
@@ -579,21 +557,11 @@
             <button class="line-height-btn" data-lh="2.2">2.2x</button>
           </div>
         </div>
-
-        <!-- 본문 너비 -->
-        <div class="setting-row">
-          <span class="setting-label">본문 너비</span>
-          <div style="display:flex; gap:6px;">
-            <button class="width-btn" data-w="640px">좁게</button>
-            <button class="width-btn" data-w="760px">보통</button>
-            <button class="width-btn" data-w="980px">넓게</button>
-          </div>
-        </div>
       </div>
     </div>
   </div>
 
-  <!-- 책갈피 관리 모달 -->
+  <!-- 책갈피 모달 -->
   <div id="bookmarkModal" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-header">
@@ -603,17 +571,14 @@
           <button id="closeBookmarkBtn" style="border:none; font-size: 18px;">✕</button>
         </div>
       </div>
-      <div id="bookmarkList" class="modal-body" style="padding: 14px;">
-        <!-- 북마크 아이템 리스트 -->
-      </div>
+      <div id="bookmarkList" class="modal-body" style="padding: 14px;"></div>
     </div>
   </div>
 
   <div id="toast"></div>
 
   <script>
-    // --- IndexedDB 설정 (문서 영구 캐싱) ---
-    const DB_NAME = 'iPadWordReaderDB';
+    const DB_NAME = 'iPadWordReaderDB_v2';
     const DB_VERSION = 1;
     let db = null;
 
@@ -626,37 +591,36 @@
             dbInstance.createObjectStore('documents', { keyPath: 'id' });
           }
         };
-        req.onsuccess = (e) => {
-          db = e.target.result;
-          resolve(db);
-        };
+        req.onsuccess = (e) => { db = e.target.result; resolve(db); };
         req.onerror = (e) => reject(e);
       });
     }
 
-    function saveDocToDB(id, name, htmlContent, stats) {
+    function saveDocToDB(docObj) {
       if (!db) return;
       const tx = db.transaction('documents', 'readwrite');
-      tx.objectStore('documents').put({
-        id: id,
-        name: name,
-        html: htmlContent,
-        stats: stats,
-        timestamp: Date.now()
-      });
+      tx.objectStore('documents').put(docObj);
     }
 
-    function getDocFromDB(id) {
+    function getAllDocsFromDB() {
       return new Promise((resolve) => {
-        if (!db) return resolve(null);
+        if (!db) return resolve([]);
         const tx = db.transaction('documents', 'readonly');
-        const req = tx.objectStore('documents').get(id);
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => resolve(null);
+        const req = tx.objectStore('documents').getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
       });
     }
 
-    // --- 변수 및 엘리먼트 참조 ---
+    function deleteDocFromDB(id) {
+      return new Promise((resolve) => {
+        if (!db) return resolve();
+        const tx = db.transaction('documents', 'readwrite');
+        const req = tx.objectStore('documents').delete(id);
+        req.onsuccess = () => resolve();
+      });
+    }
+
     const content = document.getElementById('content');
     const fileInput = document.getElementById('fileInput');
     const header = document.getElementById('header');
@@ -666,7 +630,11 @@
     const readingStats = document.getElementById('readingStats');
     const readingPercent = document.getElementById('readingPercent');
 
-    // 모달 / 드로어
+    const libraryBtn = document.getElementById('libraryBtn');
+    const libraryModal = document.getElementById('libraryModal');
+    const closeLibraryBtn = document.getElementById('closeLibraryBtn');
+    const libraryList = document.getElementById('libraryList');
+
     const tocToggleBtn = document.getElementById('tocToggleBtn');
     const tocDrawer = document.getElementById('tocDrawer');
     const tocOverlay = document.getElementById('tocOverlay');
@@ -683,7 +651,6 @@
     const addNewBookmarkBtn = document.getElementById('addNewBookmarkBtn');
     const bookmarkList = document.getElementById('bookmarkList');
 
-    // 검색
     const searchToggleBtn = document.getElementById('searchToggleBtn');
     const searchBar = document.getElementById('searchBar');
     const searchInput = document.getElementById('searchInput');
@@ -692,21 +659,15 @@
     const nextMatchBtn = document.getElementById('nextMatchBtn');
     const closeSearchBtn = document.getElementById('closeSearchBtn');
 
-    // TTS 및 자동 스크롤
     const ttsPlayBtn = document.getElementById('ttsPlayBtn');
-    const autoScrollBtn = document.getElementById('autoScrollBtn');
     const zenBtn = document.getElementById('zenBtn');
 
-    let currentFileKey = localStorage.getItem('last_active_doc_key') || null;
+    let currentFileKey = localStorage.getItem('active_doc_key') || null;
     let currentFontSize = 19;
     let isTwoColumn = false;
-    let isAutoScrolling = false;
-    let autoScrollInterval = null;
-    let autoScrollSpeed = 1.2;
     let searchMatches = [];
     let currentMatchIndex = -1;
     let isSpeaking = false;
-    let speechUtterance = null;
     let isZenMode = false;
 
     function showToast(msg) {
@@ -715,93 +676,161 @@
       setTimeout(() => toast.classList.remove('show'), 2200);
     }
 
-    // --- 파일 로드 & 파싱 ---
     fileInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
 
       const docKey = `doc_${encodeURIComponent(file.name)}_${file.size}`;
       currentFileKey = docKey;
-      localStorage.setItem('last_active_doc_key', docKey);
+      localStorage.setItem('active_doc_key', docKey);
 
       const reader = new FileReader();
       reader.onload = function(loadEvent) {
-        const arrayBuffer = loadEvent.target.result;
-        mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
+        mammoth.convertToHtml({ arrayBuffer: loadEvent.target.result })
           .then(function(result) {
-            processAndRenderDoc(file.name, result.value, true);
+            loadDocumentContent(file.name, result.value, true);
           })
-          .catch(function(err) {
-            alert('파일 변환 오류: ' + err.message);
-          });
+          .catch(err => alert('변환 오류: ' + err.message));
       };
       reader.readAsArrayBuffer(file);
     });
 
-    function processAndRenderDoc(fileName, html, isNew = false) {
+    function loadDocumentContent(fileName, html, isNewUpload = false) {
       content.innerHTML = html;
-
-      // H1, H2, H3 태그에 ID 부여 (목차용)
       const headings = content.querySelectorAll('h1, h2, h3');
-      headings.forEach((h, idx) => {
-        if (!h.id) h.id = `heading-section-${idx}`;
-      });
+      headings.forEach((h, idx) => { if (!h.id) h.id = `sec-${idx}`; });
 
-      // 단어 수 및 완독 시간 계산
       const fullText = content.innerText;
       const wordCount = (fullText.match(/\S+/g) || []).length;
       const charCount = fullText.length;
       const readMinutes = Math.max(1, Math.round(wordCount / 220));
-      const statsObj = { wordCount, charCount, readMinutes };
 
-      readingStats.textContent = `단어 ${wordCount.toLocaleString()}개 (${charCount.toLocaleString()}자) · 완독 약 ${readMinutes}분`;
-
-      // DB 저장
-      saveDocToDB(currentFileKey, fileName, content.innerHTML, statsObj);
-
-      // 목차 생성
+      readingStats.textContent = `단어 ${wordCount.toLocaleString()}개 · 완독 약 ${readMinutes}분`;
       buildTableOfContents(headings);
 
-      // 이전 위치 복원
-      if (isNew) {
+      // DB에 문서 객체 저장
+      const docObj = {
+        id: currentFileKey,
+        name: fileName,
+        html: html,
+        stats: { wordCount, charCount, readMinutes },
+        lastScrollY: isNewUpload ? 0 : (getSavedScrollY() || 0),
+        updatedAt: Date.now(),
+        bookmarks: getSavedBookmarks()
+      };
+      saveDocToDB(docObj);
+
+      if (isNewUpload) {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        showToast(`'${fileName}' 문서를 불러왔어요 📖`);
+      } else {
         restorePosition();
       }
       updateScrollProgress();
+    }
+
+    function getSavedScrollY() {
+      // 로컬캐시에서 읽어오기
+      return 0;
+    }
+    function getSavedBookmarks() {
+      return [];
+    }
+
+    // --- 내 보관함 열기 및 렌더링 ---
+    libraryBtn.addEventListener('click', async () => {
+      await renderLibraryList();
+      libraryModal.classList.add('active');
+    });
+    closeLibraryBtn.addEventListener('click', () => libraryModal.classList.remove('active'));
+    libraryModal.addEventListener('click', (e) => { if (e.target === libraryModal) libraryModal.classList.remove('active'); });
+
+    async function renderLibraryList() {
+      const docs = await getAllDocsFromDB();
+      libraryList.innerHTML = '';
+
+      if (docs.length === 0) {
+        libraryList.innerHTML = '<div style="text-align:center; padding:30px; color:var(--sub-text);">보관된 문서가 없습니다. 새 파일을 열어보세요.</div>';
+        return;
+      }
+
+      // 최근 열어본 순서대로 정렬
+      docs.sort((a, b) => b.updatedAt - a.updatedAt);
+
+      docs.forEach(doc => {
+        const item = document.createElement('div');
+        const isCurrent = doc.id === currentFileKey;
+        item.style.cssText = `background:var(--card-bg); border:1px solid ${isCurrent ? 'var(--accent-color)' : 'var(--border-color)'}; border-radius:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; cursor:pointer;`;
+        
+        const dateStr = new Date(doc.updatedAt).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+        item.innerHTML = `
+          <div style="flex:1; overflow:hidden;">
+            <div style="font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:${isCurrent ? 'var(--accent-color)' : 'var(--text-color)'};">${doc.name} ${isCurrent ? '(읽는 중)' : ''}</div>
+            <div style="font-size:12.5px; color:var(--sub-text); margin-top:3px;">단어 ${doc.stats.wordCount.toLocaleString()}개 · 마지막 방문: ${dateStr}</div>
+          </div>
+          <button class="lib-del-btn" style="color:#ff3b30; border:none; padding:6px 10px; font-size:13px;">삭제</button>
+        `;
+
+        item.querySelector('div').addEventListener('click', async () => {
+          currentFileKey = doc.id;
+          localStorage.setItem('active_doc_key', doc.id);
+          loadDocumentContent(doc.name, doc.html, false);
+          libraryModal.classList.remove('active');
+          showToast(`'${doc.name}' 문서를 불러왔습니다.`);
+        });
+
+        item.querySelector('.lib-del-btn').addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (confirm(`'${doc.name}' 문서를 보관함에서 삭제하시겠습니까?`)) {
+            await deleteDocFromDB(doc.id);
+            renderLibraryList();
+          }
+        });
+
+        libraryList.appendChild(item);
+      });
     }
 
     // --- 목차 빌더 ---
     function buildTableOfContents(headings) {
       tocList.innerHTML = '';
       if (!headings || headings.length === 0) {
-        tocList.innerHTML = '<div style="text-align:center; padding:30px; color:var(--sub-text);">인식된 장/절 제목이 없습니다.</div>';
+        tocList.innerHTML = '<div style="text-align:center; padding:30px; color:var(--sub-text);">인식된 제목이 없습니다.</div>';
         return;
       }
-
       headings.forEach(h => {
         const item = document.createElement('div');
-        const tag = h.tagName.toLowerCase();
-        item.className = `toc-item ${tag}`;
-        item.textContent = h.textContent.trim() || '제목 없는 섹션';
+        item.className = `toc-item ${h.tagName.toLowerCase()}`;
+        item.textContent = h.textContent.trim() || '제목';
         item.addEventListener('click', () => {
           h.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          closeDrawer();
+          tocOverlay.classList.remove('active');
+          tocDrawer.classList.remove('open');
         });
         tocList.appendChild(item);
       });
     }
 
-    // --- 스크롤 진행률 & 자동 위치 저장 ---
+    // --- 스크롤 및 위치 자동 저장 ---
     let scrollTimer = null;
     window.addEventListener('scroll', () => {
       updateScrollProgress();
-
       if (!currentFileKey) return;
       clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(() => {
-        const docData = JSON.parse(localStorage.getItem(currentFileKey) || '{}');
-        docData.lastScrollY = window.scrollY;
-        localStorage.setItem(currentFileKey, JSON.stringify(docData));
-      }, 250);
+      scrollTimer = setTimeout(async () => {
+        if (!db) return;
+        const tx = db.transaction('documents', 'readwrite');
+        const store = tx.objectStore('documents');
+        const req = store.get(currentFileKey);
+        req.onsuccess = () => {
+          if (req.result) {
+            req.result.lastScrollY = window.scrollY;
+            req.result.updatedAt = Date.now();
+            store.put(req.result);
+          }
+        };
+      }, 300);
     });
 
     function updateScrollProgress() {
@@ -811,43 +840,43 @@
         readingPercent.textContent = '0% 완료';
         return;
       }
-      const percent = Math.min(100, Math.max(0, Math.round((window.scrollY / max) * 100)));
-      readingProgress.style.width = `${percent}%`;
-      readingPercent.textContent = `${percent}% 독서 완료`;
+      const pct = Math.min(100, Math.max(0, Math.round((window.scrollY / max) * 100)));
+      readingProgress.style.width = `${pct}%`;
+      readingPercent.textContent = `${pct}% 완료`;
     }
 
-    function restorePosition() {
-      if (!currentFileKey) return;
-      const docData = JSON.parse(localStorage.getItem(currentFileKey) || '{}');
-      if (docData.lastScrollY && docData.lastScrollY > 80) {
-        setTimeout(() => {
-          window.scrollTo({ top: docData.lastScrollY, behavior: 'smooth' });
-          showToast('마지막으로 읽던 위치를 불러왔어요 📖');
-        }, 150);
-      }
+    async function restorePosition() {
+      if (!currentFileKey || !db) return;
+      const tx = db.transaction('documents', 'readonly');
+      const req = tx.objectStore('documents').get(currentFileKey);
+      req.onsuccess = () => {
+        if (req.result && req.result.lastScrollY > 60) {
+          setTimeout(() => {
+            window.scrollTo({ top: req.result.lastScrollY, behavior: 'smooth' });
+            showToast('마지막 읽던 위치로 이동했어요 📖');
+          }, 150);
+        }
+      };
     }
 
-    // --- 목차 드로어 열기/닫기 ---
     tocToggleBtn.addEventListener('click', () => {
       tocOverlay.classList.add('active');
       tocDrawer.classList.add('open');
     });
-
-    function closeDrawer() {
+    tocOverlay.addEventListener('click', () => {
       tocOverlay.classList.remove('active');
       tocDrawer.classList.remove('open');
-    }
-    tocOverlay.addEventListener('click', closeDrawer);
-    closeTocBtn.addEventListener('click', closeDrawer);
-
-    // --- 환경 설정 (테마, 글꼴, 2단 보기) ---
-    settingsBtn.addEventListener('click', () => settingsModal.classList.add('active'));
-    closeSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('active'));
-    settingsModal.addEventListener('click', (e) => {
-      if (e.target === settingsModal) settingsModal.classList.remove('active');
+    });
+    closeTocBtn.addEventListener('click', () => {
+      tocOverlay.classList.remove('active');
+      tocDrawer.classList.remove('open');
     });
 
-    // 테마 변경
+    // --- 환경 설정 ---
+    settingsBtn.addEventListener('click', () => settingsModal.classList.add('active'));
+    closeSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('active'));
+    settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) settingsModal.classList.remove('active'); });
+
     document.querySelectorAll('.theme-chip').forEach(chip => {
       chip.addEventListener('click', () => {
         document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('selected'));
@@ -856,324 +885,192 @@
       });
     });
 
-    // 2단 분할 보기 토글
     const twoColumnToggleBtn = document.getElementById('twoColumnToggleBtn');
     twoColumnToggleBtn.addEventListener('click', () => {
       isTwoColumn = !isTwoColumn;
       if (isTwoColumn) {
         content.classList.add('two-column-layout');
         twoColumnToggleBtn.textContent = '2단 해제';
-        showToast('가로 2단 책 펼침 모드로 전환했어요');
       } else {
         content.classList.remove('two-column-layout');
         twoColumnToggleBtn.textContent = '1단 보기';
-        showToast('일반 1단 모드로 전환했어요');
       }
     });
 
-    // 글자 크기
     document.getElementById('fontIncBtn').addEventListener('click', () => {
-      if (currentFontSize < 34) {
-        currentFontSize += 1.5;
-        document.documentElement.style.setProperty('--font-size', currentFontSize + 'px');
-      }
+      if (currentFontSize < 34) { currentFontSize += 1.5; document.documentElement.style.setProperty('--font-size', currentFontSize + 'px'); }
     });
     document.getElementById('fontDecBtn').addEventListener('click', () => {
-      if (currentFontSize > 13) {
-        currentFontSize -= 1.5;
-        document.documentElement.style.setProperty('--font-size', currentFontSize + 'px');
-      }
+      if (currentFontSize > 13) { currentFontSize -= 1.5; document.documentElement.style.setProperty('--font-size', currentFontSize + 'px'); }
     });
 
-    // 서체
-    document.querySelectorAll('.font-fam-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const f = btn.dataset.font;
-        if (f === 'serif') {
-          document.documentElement.style.setProperty('--font-family', '"Apple Myungjo", "Batang", serif');
-        } else if (f === 'mono') {
-          document.documentElement.style.setProperty('--font-family', 'ui-monospace, "Courier New", monospace');
-        } else {
-          document.documentElement.style.setProperty('--font-family', '-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif');
-        }
+    document.querySelectorAll('.font-fam-btn').forEach(b => {
+      b.addEventListener('click', () => {
+        const f = b.dataset.font;
+        if (f === 'serif') document.documentElement.style.setProperty('--font-family', '"Apple Myungjo", serif');
+        else if (f === 'mono') document.documentElement.style.setProperty('--font-family', 'monospace');
+        else document.documentElement.style.setProperty('--font-family', '-apple-system, sans-serif');
       });
     });
-
-    // 줄간격
-    document.querySelectorAll('.line-height-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.documentElement.style.setProperty('--line-height', btn.dataset.lh);
-      });
+    document.querySelectorAll('.line-height-btn').forEach(b => {
+      b.addEventListener('click', () => document.documentElement.style.setProperty('--line-height', b.dataset.lh));
     });
 
-    // 본문 폭
-    document.querySelectorAll('.width-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.documentElement.style.setProperty('--content-width', btn.dataset.w);
-      });
-    });
-
-    // --- 책갈피 기능 ---
-    bookmarkModalBtn.addEventListener('click', () => {
-      renderBookmarkList();
+    // --- 책갈피 ---
+    bookmarkModalBtn.addEventListener('click', async () => {
+      await renderBookmarks();
       bookmarkModal.classList.add('active');
     });
     closeBookmarkBtn.addEventListener('click', () => bookmarkModal.classList.remove('active'));
-    bookmarkModal.addEventListener('click', (e) => {
-      if (e.target === bookmarkModal) bookmarkModal.classList.remove('active');
+    bookmarkModal.addEventListener('click', (e) => { if (e.target === bookmarkModal) bookmarkModal.classList.remove('active'); });
+
+    addNewBookmarkBtn.addEventListener('click', async () => {
+      if (!currentFileKey || !db) return;
+      const tx = db.transaction('documents', 'readwrite');
+      const store = tx.objectStore('documents');
+      const req = store.get(currentFileKey);
+
+      req.onsuccess = async () => {
+        const doc = req.result;
+        if (!doc) return;
+        if (!doc.bookmarks) doc.bookmarks = [];
+
+        const scrollY = window.scrollY;
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = max > 0 ? Math.round((scrollY / max) * 100) : 0;
+        const title = prompt('책갈피 이름:', `${pct}% 지점`);
+        if (!title) return;
+
+        doc.bookmarks.push({ id: Date.now(), title, scrollY, percent: pct });
+        store.put(doc);
+        renderBookmarks();
+        showToast('책갈피가 추가되었습니다 🔖');
+      };
     });
 
-    addNewBookmarkBtn.addEventListener('click', () => {
-      if (!currentFileKey) {
-        alert('먼저 문서를 열어주세요.');
-        return;
-      }
-      const scrollY = window.scrollY;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const pct = max > 0 ? Math.round((scrollY / max) * 100) : 0;
-
-      let preview = '';
-      const nodes = content.querySelectorAll('p, h1, h2, h3');
-      for (let n of nodes) {
-        const r = n.getBoundingClientRect();
-        if (r.top >= 50 && r.top <= window.innerHeight * 0.4) {
-          preview = n.innerText.slice(0, 22).trim();
-          break;
+    async function renderBookmarks() {
+      if (!currentFileKey || !db) return;
+      const tx = db.transaction('documents', 'readonly');
+      const req = tx.objectStore('documents').get(currentFileKey);
+      req.onsuccess = () => {
+        const doc = req.result;
+        const bms = doc && doc.bookmarks ? doc.bookmarks : [];
+        bookmarkList.innerHTML = '';
+        if (bms.length === 0) {
+          bookmarkList.innerHTML = '<div style="text-align:center; padding:30px; color:var(--sub-text);">등록된 책갈피가 없습니다.</div>';
+          return;
         }
-      }
-
-      const defaultTitle = preview ? `${preview}...` : `${pct}% 지점`;
-      const title = prompt('책갈피 이름을 입력하세요:', defaultTitle);
-      if (title === null) return;
-
-      const docData = JSON.parse(localStorage.getItem(currentFileKey) || '{}');
-      if (!docData.bookmarks) docData.bookmarks = [];
-
-      docData.bookmarks.push({
-        id: Date.now(),
-        title: title.trim() || defaultTitle,
-        scrollY: scrollY,
-        percent: pct,
-        date: new Date().toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-      });
-
-      localStorage.setItem(currentFileKey, JSON.stringify(docData));
-      renderBookmarkList();
-      showToast('책갈피가 등록되었어요 🔖');
-    });
-
-    function renderBookmarkList() {
-      const docData = JSON.parse(localStorage.getItem(currentFileKey) || '{}');
-      const bms = docData.bookmarks || [];
-      bookmarkList.innerHTML = '';
-
-      if (bms.length === 0) {
-        bookmarkList.innerHTML = '<div style="text-align:center; padding:30px; color:var(--sub-text);">등록된 책갈피가 없습니다.</div>';
-        return;
-      }
-
-      bms.forEach(b => {
-        const row = document.createElement('div');
-        row.style.cssText = 'background:var(--card-bg); border:1px solid var(--border-color); border-radius:10px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; cursor:pointer;';
-        row.innerHTML = `
-          <div style="flex:1; overflow:hidden;">
-            <div style="font-weight:600; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${b.title}</div>
-            <div style="font-size:12px; color:var(--sub-text); margin-top:2px;">진행도 ${b.percent}% · ${b.date}</div>
-          </div>
-          <button style="color:#ff3b30; border:none; padding:4px 8px; font-size:12.5px;">삭제</button>
-        `;
-        row.querySelector('div').addEventListener('click', () => {
-          window.scrollTo({ top: b.scrollY, behavior: 'smooth' });
-          bookmarkModal.classList.remove('active');
+        bms.forEach(b => {
+          const row = document.createElement('div');
+          row.style.cssText = 'background:var(--card-bg); border:1px solid var(--border-color); border-radius:10px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; cursor:pointer;';
+          row.innerHTML = `<div><b>${b.title}</b> (${b.percent}%)</div><button style="color:#ff3b30; border:none; background:none;">삭제</button>`;
+          row.querySelector('div').addEventListener('click', () => {
+            window.scrollTo({ top: b.scrollY, behavior: 'smooth' });
+            bookmarkModal.classList.remove('active');
+          });
+          row.querySelector('button').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const tx2 = db.transaction('documents', 'readwrite');
+            const store2 = tx2.objectStore('documents');
+            const req2 = store2.get(currentFileKey);
+            req2.onsuccess = () => {
+              const d = req2.result;
+              d.bookmarks = d.bookmarks.filter(x => x.id !== b.id);
+              store2.put(d);
+              renderBookmarks();
+            };
+          });
+          bookmarkList.appendChild(row);
         });
-        row.querySelector('button').addEventListener('click', (e) => {
-          e.stopPropagation();
-          docData.bookmarks = docData.bookmarks.filter(x => x.id !== b.id);
-          localStorage.setItem(currentFileKey, JSON.stringify(docData));
-          renderBookmarkList();
-        });
-        bookmarkList.appendChild(row);
-      });
+      };
     }
 
-    // --- 본문 키워드 검색 (Ctrl+F) ---
+    // --- 검색 ---
     searchToggleBtn.addEventListener('click', () => {
       searchBar.classList.toggle('active');
-      if (searchBar.classList.contains('active')) {
-        searchInput.focus();
-      } else {
-        clearHighlights();
-      }
+      if (searchBar.classList.contains('active')) searchInput.focus();
+      else clearHighlights();
     });
-
-    closeSearchBtn.addEventListener('click', () => {
-      searchBar.classList.remove('active');
-      clearHighlights();
-    });
-
-    searchInput.addEventListener('input', () => {
-      const q = searchInput.value.trim();
-      executeSearch(q);
-    });
+    closeSearchBtn.addEventListener('click', () => { searchBar.classList.remove('active'); clearHighlights(); });
+    searchInput.addEventListener('input', () => executeSearch(searchInput.value.trim()));
 
     function clearHighlights() {
-      const marks = content.querySelectorAll('mark.search-match');
-      marks.forEach(m => {
-        const parent = m.parentNode;
-        parent.replaceChild(document.createTextNode(m.textContent), m);
-        parent.normalize();
+      content.querySelectorAll('mark.search-match').forEach(m => {
+        m.parentNode.replaceChild(document.createTextNode(m.textContent), m);
+        m.parentNode.normalize();
       });
-      searchMatches = [];
-      currentMatchIndex = -1;
-      searchCount.textContent = '0 / 0';
+      searchMatches = []; currentMatchIndex = -1; searchCount.textContent = '0 / 0';
     }
 
     function executeSearch(query) {
       clearHighlights();
       if (!query || query.length < 2) return;
-
       const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, null, false);
-      const textNodes = [];
-      let n;
-      while ((n = walker.nextNode())) {
-        if (n.nodeValue.trim().length > 0) textNodes.push(n);
-      }
+      const nodes = []; let n; while (n = walker.nextNode()) if (n.nodeValue.trim()) nodes.push(n);
 
-      textNodes.forEach(node => {
+      nodes.forEach(node => {
         const text = node.nodeValue;
-        const lower = text.toLowerCase();
-        const qLower = query.toLowerCase();
-        let idx = lower.indexOf(qLower);
-
+        const lower = text.toLowerCase(); const q = query.toLowerCase();
+        let idx = lower.indexOf(q);
         if (idx !== -1) {
-          const frag = document.createDocumentFragment();
-          let lastIdx = 0;
+          const frag = document.createDocumentFragment(); let last = 0;
           while (idx !== -1) {
-            frag.appendChild(document.createTextNode(text.substring(lastIdx, idx)));
+            frag.appendChild(document.createTextNode(text.substring(last, idx)));
             const mark = document.createElement('mark');
             mark.className = 'search-match';
             mark.textContent = text.substring(idx, idx + query.length);
             frag.appendChild(mark);
-            lastIdx = idx + query.length;
-            idx = lower.indexOf(qLower, lastIdx);
+            last = idx + query.length;
+            idx = lower.indexOf(q, last);
           }
-          frag.appendChild(document.createTextNode(text.substring(lastIdx)));
+          frag.appendChild(document.createTextNode(text.substring(last)));
           node.parentNode.replaceChild(frag, node);
         }
       });
-
       searchMatches = Array.from(content.querySelectorAll('mark.search-match'));
-      if (searchMatches.length > 0) {
-        currentMatchIndex = 0;
-        highlightCurrentMatch();
-      } else {
-        searchCount.textContent = '0 / 0';
-      }
+      if (searchMatches.length > 0) { currentMatchIndex = 0; highlightMatch(); }
+      else searchCount.textContent = '0 / 0';
     }
 
-    function highlightCurrentMatch() {
+    function highlightMatch() {
       searchMatches.forEach(m => m.classList.remove('current-match'));
-      if (currentMatchIndex >= 0 && currentMatchIndex < searchMatches.length) {
-        const current = searchMatches[currentMatchIndex];
-        current.classList.add('current-match');
-        current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (searchMatches[currentMatchIndex]) {
+        const cur = searchMatches[currentMatchIndex];
+        cur.classList.add('current-match');
+        cur.scrollIntoView({ behavior: 'smooth', block: 'center' });
         searchCount.textContent = `${currentMatchIndex + 1} / ${searchMatches.length}`;
       }
     }
+    nextMatchBtn.addEventListener('click', () => { if (searchMatches.length) { currentMatchIndex = (currentMatchIndex + 1) % searchMatches.length; highlightMatch(); } });
+    prevMatchBtn.addEventListener('click', () => { if (searchMatches.length) { currentMatchIndex = (currentMatchIndex - 1 + searchMatches.length) % searchMatches.length; highlightMatch(); } });
 
-    nextMatchBtn.addEventListener('click', () => {
-      if (searchMatches.length === 0) return;
-      currentMatchIndex = (currentMatchIndex + 1) % searchMatches.length;
-      highlightCurrentMatch();
-    });
-
-    prevMatchBtn.addEventListener('click', () => {
-      if (searchMatches.length === 0) return;
-      currentMatchIndex = (currentMatchIndex - 1 + searchMatches.length) % searchMatches.length;
-      highlightCurrentMatch();
-    });
-
-    // --- TTS (오디오북 읽어주기) ---
+    // --- TTS & Zen ---
     ttsPlayBtn.addEventListener('click', () => {
-      if (!('speechSynthesis' in window)) {
-        alert('이 기기는 음성 합성을 지원하지 않습니다.');
-        return;
-      }
-
-      if (isSpeaking) {
-        window.speechSynthesis.cancel();
-        isSpeaking = false;
-        ttsPlayBtn.textContent = '🔊 듣기';
-        showToast('음성 낭독을 정지했어요');
-        return;
-      }
-
-      const text = content.innerText.trim();
-      if (!text) {
-        alert('낭독할 내용이 없습니다.');
-        return;
-      }
-
-      window.speechSynthesis.cancel();
-      // 가독성을 위해 현재 위치 기준으로 발췌해 낭독
-      speechUtterance = new SpeechSynthesisUtterance(text.slice(0, 10000));
-      speechUtterance.lang = 'ko-KR';
-      speechUtterance.rate = 1.0;
-
-      speechUtterance.onend = () => {
-        isSpeaking = false;
-        ttsPlayBtn.textContent = '🔊 듣기';
-      };
-
-      window.speechSynthesis.speak(speechUtterance);
-      isSpeaking = true;
-      ttsPlayBtn.textContent = '⏹ 정지';
-      showToast('본문 낭독을 시작합니다 🎧');
+      if (!('speechSynthesis' in window)) return alert('음성 합성 미지원 기기');
+      if (isSpeaking) { window.speechSynthesis.cancel(); isSpeaking = false; ttsPlayBtn.textContent = '🔊 듣기'; return; }
+      const u = new SpeechSynthesisUtterance(content.innerText.slice(0, 8000));
+      u.lang = 'ko-KR';
+      u.onend = () => { isSpeaking = false; ttsPlayBtn.textContent = '🔊 듣기'; };
+      window.speechSynthesis.speak(u);
+      isSpeaking = true; ttsPlayBtn.textContent = '⏹ 정지';
+      showToast('낭독을 시작합니다 🎧');
     });
 
-    // --- 자동 스크롤 (핸즈프리) ---
-    autoScrollBtn.addEventListener('click', () => {
-      if (isAutoScrolling) {
-        clearInterval(autoScrollInterval);
-        isAutoScrolling = false;
-        autoScrollBtn.textContent = '⬇️ 자동스크롤';
-        showToast('자동 스크롤이 중지되었습니다');
-      } else {
-        isAutoScrolling = true;
-        autoScrollBtn.textContent = '⏸ 일시정지';
-        autoScrollInterval = setInterval(() => {
-          window.scrollBy(0, autoScrollSpeed);
-        }, 20);
-        showToast('자동 스크롤을 시작합니다');
-      }
-    });
-
-    // --- 몰입(Zen) 모드 ---
-    zenBtn.addEventListener('click', toggleZenMode);
-    content.addEventListener('click', (e) => {
-      // 텍스트 드래그가 아닐 때 가볍게 탭하면 툴바 숨김/보임 토글
-      if (window.getSelection().toString().length === 0 && e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
-        toggleZenMode();
-      }
-    });
-
-    function toggleZenMode() {
+    zenBtn.addEventListener('click', toggleZen);
+    function toggleZen() {
       isZenMode = !isZenMode;
       header.classList.toggle('zen-hidden', isZenMode);
       bottomBar.classList.toggle('zen-hidden', isZenMode);
-      if (isZenMode) {
-        searchBar.classList.remove('active');
-        clearHighlights();
-      }
     }
 
-    // --- 초기화: 앱 실행 시 마지막 문서 자동 로드 ---
+    // --- 앱 시작 ---
     window.addEventListener('DOMContentLoaded', async () => {
       await initDB();
       if (currentFileKey) {
-        const cachedDoc = await getDocFromDB(currentFileKey);
-        if (cachedDoc) {
-          processAndRenderDoc(cachedDoc.name, cachedDoc.html, true);
+        const docs = await getAllDocsFromDB();
+        const activeDoc = docs.find(d => d.id === currentFileKey);
+        if (activeDoc) {
+          loadDocumentContent(activeDoc.name, activeDoc.html, false);
         }
       }
     });
